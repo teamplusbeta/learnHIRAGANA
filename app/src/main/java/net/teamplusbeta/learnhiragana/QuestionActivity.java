@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
 import android.speech.tts.TextToSpeech;
 import android.util.Log;
@@ -35,9 +36,8 @@ public class QuestionActivity extends Activity {
         LinearLayout.LayoutParams Params1 = new LinearLayout.LayoutParams(size, size);
         LinearLayout.LayoutParams Params2 = new LinearLayout.LayoutParams(size / 5, size / 5);
 
-
         TextView textView = (TextView) findViewById(R.id.questionText);
-        textView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+        textView.setLayerType(View.LAYER_TYPE_SOFTWARE, null); // 残念だけどこれくらいなら HWレンダラのパワー使わなくても...
 
         textView.setTextSize(400 * getScaleSize(this.getApplicationContext()));
         textView.setLayoutParams(Params1);
@@ -100,12 +100,14 @@ public class QuestionActivity extends Activity {
             toSpeek = "屁";
         }
 
-        tts.speak(toSpeek, TextToSpeech.QUEUE_FLUSH, null, null);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            tts.speak(toSpeek, TextToSpeech.QUEUE_FLUSH, null, null);
+        } else {
+            tts.speak(toSpeek, TextToSpeech.QUEUE_FLUSH, null);
+        }
     }
 
     public void rewindHistory() {
-
-//        Log.d("TEST", "current_history_index : " + current_history_index);
 
         if( current_history_index == 0 ) {
             return;
@@ -127,9 +129,6 @@ public class QuestionActivity extends Activity {
         if( current_history_index >= 0 ) {
             current_history_index--;
         }
-
-//        showHistory();
-//        Log.d("TEST", "current_history_index : " + current_history_index);
     }
 
     public void addListenerForImageButton() {
@@ -208,54 +207,25 @@ public class QuestionActivity extends Activity {
 
         historyText[current_history_index] = textView.getText().toString();
         current_history_index++;
-
-//        showHistory();
-
     }
 
     public static float getWindowSize(Context context) {
 
         //画面サイズ取得の準備
         WindowManager wm = (WindowManager) context.getSystemService(WINDOW_SERVICE);
-        Display disp = wm.getDefaultDisplay();
+        Display display = wm.getDefaultDisplay();
 
-        float width;
+        Point size = new Point();
+        display.getSize(size);
 
-        // AndroidのAPIレベルによって画面サイズ取得方法が異なるので条件分岐
-        if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) < 13) {
-            width = disp.getWidth();
-        } else {
-            Point size = new Point();
-            disp.getSize(size);
-            width = size.x;
-        }
-
-        return width;
+        return size.x;
     }
 
-    public void showHistory() {
-        for( int i=0;i<historyText.length;i++ ) {
-            Log.d( "TEST",  "history " + historyText[i] );
-        }
-    }
-
-    /**
-     * drawableにstone.png（480px×1px）を仕込ませて、幅サイズの基準値にして、
-     * 画面サイズによって拡大縮小の調整をする。
-     *
-     * @param context コンテキスト
-     * @return float Scale size
-     */
     public static float getScaleSize(Context context) {
 
         //stone.pngを読み込んでBitmap型で扱う
-        Bitmap _bm = BitmapFactory.decodeResource(context.getResources(),
-                R.drawable.stone);
+        Bitmap _bm = BitmapFactory.decodeResource(context.getResources(), R.drawable.stone);
 
-        float _scale = 0;
-
-        _scale = (float) getWindowSize(context) / (float) _bm.getWidth();
-
-        return _scale;
+        return getWindowSize(context) / (float) _bm.getWidth();
     }
 }
