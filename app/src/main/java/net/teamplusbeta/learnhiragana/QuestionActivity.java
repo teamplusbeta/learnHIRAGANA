@@ -37,11 +37,8 @@ public class QuestionActivity extends Activity {
 
 
         TextView textView = (TextView) findViewById(R.id.questionText);
-        if (getScaleSize(this.getApplicationContext()) > 1.6) {
-            // 文字が大きすぎると HW Accelaration が効かなくて文字が表示されない
-            Log.d("TEST", "ScaleSize が 1.6 を超えたので、HW Accelaration を切りました。 ( " + getScaleSize(this.getApplicationContext()) + " )");
-            textView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-        }
+        textView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
         textView.setTextSize(400 * getScaleSize(this.getApplicationContext()));
         textView.setLayoutParams(Params1);
 
@@ -222,7 +219,7 @@ public class QuestionActivity extends Activity {
         WindowManager wm = (WindowManager) context.getSystemService(WINDOW_SERVICE);
         Display disp = wm.getDefaultDisplay();
 
-        float width = 0;
+        float width;
 
         // AndroidのAPIレベルによって画面サイズ取得方法が異なるので条件分岐
         if (Integer.valueOf(android.os.Build.VERSION.SDK_INT) < 13) {
@@ -246,8 +243,8 @@ public class QuestionActivity extends Activity {
      * drawableにstone.png（480px×1px）を仕込ませて、幅サイズの基準値にして、
      * 画面サイズによって拡大縮小の調整をする。
      *
-     * @param context
-     * @return float
+     * @param context コンテキスト
+     * @return float Scale size
      */
     public static float getScaleSize(Context context) {
 
